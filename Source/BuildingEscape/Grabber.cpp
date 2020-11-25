@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+#include "Grabber.h"
 
+#include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Grabber.h"
+#include "Math/Color.h"
 
 #define OUT
 
@@ -34,9 +36,20 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
         return;
     }
 
-    FRotator playerViewPointRotation;
-    FVector playerViewPointPosition;
-    playerController->GetPlayerViewPoint(OUT playerViewPointPosition, OUT playerViewPointRotation);
-    UE_LOG(LogTemp, Log, TEXT("Position: %s Rotation: %s"), *(playerViewPointPosition.ToString()), *(playerViewPointRotation.ToString()));
+    FRotator PlayerViewPointRotation;
+    FVector PlayerViewPointPosition;
+    playerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
+
+    DrawDebugLine(
+        GetWorld(),
+        PlayerViewPointPosition,
+        PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach),
+        FColor::Red,
+        false,
+        0.0f,
+        0,
+        5.0f
+    );
+    
 }
 
