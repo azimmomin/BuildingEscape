@@ -8,23 +8,32 @@
 
 #define OUT
 
-// Sets default values for this component's properties
 UGrabber::UGrabber()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
-// Called when the game starts
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
+
+    PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+    if (!PhysicsHandle)
+    {
+        UE_LOG(LogTemp, Error, TEXT("%s does not have a UPhysicsHandleComponent attached."), *GetOwner()->GetName());
+    }
+
+    Input = GetOwner()->FindComponentByClass<UInputComponent>();
+    if (Input)
+    {
+        Input->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("%s does not have a UInputComponent attached."), *GetOwner()->GetName());
+    }
 }
 
-
-// Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -38,12 +47,15 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
     FRotator PlayerViewPointRotation;
     FVector PlayerViewPointPosition;
+    FVector LineTraceEnd;
+    
     playerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
+    LineTraceEnd = PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach);
 
     DrawDebugLine(
         GetWorld(),
         PlayerViewPointPosition,
-        PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach),
+        LineTraceEnd,
         FColor::Red,
         false,
         0.0f,
@@ -51,5 +63,25 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
         5.0f
     );
     
+    FHitResult Hit;
+    FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
+    GetWorld()->LineTraceSingleByObjectType(
+        OUT Hit,
+        PlayerViewPointPosition,
+        LineTraceEnd,
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+        TraceParams
+    );
+
+    const AActor* ActorHit = Hit.GetActor();
+    if (ActorHit)
+    {
+      UE_LOG(LogTemp, Warning, TEXT("Trace hit: %s"), *(ActorHit->GetName()));
+    }
+}
+
+void UGrabber::Grab()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Grab."));
 }
 
