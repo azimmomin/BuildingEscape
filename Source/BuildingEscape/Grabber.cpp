@@ -27,6 +27,7 @@ void UGrabber::BeginPlay()
     if (Input)
     {
         Input->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+        Input->BindAction("Grab", IE_Released, this, &UGrabber::Release);
     }
     else
     {
@@ -83,5 +84,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 void UGrabber::Grab()
 {
     UE_LOG(LogTemp, Warning, TEXT("Grab."));
+}
+
+void UGrabber::Release()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Release."));
 }
 

@@ -25,7 +25,7 @@ public:
 
 private:
     void Grab();
-
+    void Release();
 private:
     const float Reach = 100.0f;
     const UPhysicsHandleComponent* PhysicsHandle = nullptr;
