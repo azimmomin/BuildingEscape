@@ -31,6 +31,8 @@ private:
     void Grab();
     void Release();
     FHitResult GetFirstPhysicsBodyInReach() const;
+    const FVector GetPlayerReach() const;
+    const FVector GetPlayerReach(const FVector& PlayerViewPointPosition, const FRotator& PlayerViewPointRotation) const;
 private:
     const float Reach = 100.0f;
     UPhysicsHandleComponent* PhysicsHandle = nullptr;

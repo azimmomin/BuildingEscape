@@ -61,14 +61,7 @@ void UGrabber::Grab()
     FHitResult Hit = GetFirstPhysicsBodyInReach();
     if (Hit.GetActor())
     {
-        FRotator PlayerViewPointRotation;
-        FVector PlayerViewPointPosition;
-        FVector LineTraceEnd;
-    
-        PlayerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
-        LineTraceEnd = PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach);
-    
-        PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent(), NAME_None, LineTraceEnd);
+        PhysicsHandle->GrabComponentAtLocation(Hit.GetComponent(), NAME_None, GetPlayerReach());
     }
 }
 
@@ -86,14 +79,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
     if (PhysicsHandle->GrabbedComponent)
     {
-        FRotator PlayerViewPointRotation;
-        FVector PlayerViewPointPosition;
-        FVector LineTraceEnd;
-    
-        PlayerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
-        LineTraceEnd = PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach);
-    
-        PhysicsHandle->SetTargetLocation(LineTraceEnd);
+        PhysicsHandle->SetTargetLocation(GetPlayerReach());
     }
 }
 
@@ -101,20 +87,30 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
     FRotator PlayerViewPointRotation;
     FVector PlayerViewPointPosition;
-    FVector LineTraceEnd;
-    
     PlayerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
-    LineTraceEnd = PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach);
     
     FHitResult Hit;
     FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
     GetWorld()->LineTraceSingleByObjectType(
         OUT Hit,
         PlayerViewPointPosition,
-        LineTraceEnd,
+        GetPlayerReach(PlayerViewPointPosition, PlayerViewPointRotation),
         FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
         TraceParams
     );
 
     return Hit;
+}
+
+const FVector UGrabber::GetPlayerReach() const
+{
+    FRotator PlayerViewPointRotation;
+    FVector PlayerViewPointPosition;
+    PlayerController->GetPlayerViewPoint(OUT PlayerViewPointPosition, OUT PlayerViewPointRotation);
+    return GetPlayerReach(PlayerViewPointPosition, PlayerViewPointRotation);
+}
+
+const FVector UGrabber::GetPlayerReach(const FVector& PlayerViewPointPosition, const FRotator& PlayerViewPointRotation) const
+{
+    return PlayerViewPointPosition + (PlayerViewPointRotation.Vector() * Reach);
 }
